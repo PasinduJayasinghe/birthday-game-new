@@ -37,6 +37,8 @@ export function GameArena() {
     const [gameWon, setGameWon] = useState(false);
     const [gameOver, setGameOver] = useState(false);
     const [showVideo, setShowVideo] = useState(false);
+    const [touchUp, setTouchUp] = useState(false);
+    const [touchDown, setTouchDown] = useState(false);
 
     // Refs for game loop
     const bossDirRef = useRef(1);
@@ -63,10 +65,10 @@ export function GameArena() {
             setPlayerY((prevY) => {
                 let newY = prevY;
 
-                if (keys.up) {
+                if (keys.up || touchUp) {
                     newY -= PLAYER_SPEED * deltaTime;
                 }
-                if (keys.down) {
+                if (keys.down || touchDown) {
                     newY += PLAYER_SPEED * deltaTime;
                 }
 
@@ -175,7 +177,7 @@ export function GameArena() {
                     .filter((p) => p.x > -PROJECTILE_SIZE && p.x < GAME_WIDTH + PROJECTILE_SIZE);
             });
         },
-        [keys, stage.bossFireRate, stage.projectileType, gameOver, gameWon, currentStage]
+        [keys, touchUp, touchDown, stage.bossFireRate, stage.projectileType, gameOver, gameWon, currentStage]
     );
 
     useGameLoop(gameUpdate);
@@ -206,6 +208,8 @@ export function GameArena() {
                 style={{
                     width: `${GAME_WIDTH}px`,
                     height: `${GAME_HEIGHT}px`,
+                    maxWidth: '100vw',
+                    maxHeight: '100vh',
                 }}
             >
                 {/* Background */}
@@ -250,8 +254,32 @@ export function GameArena() {
                 </div>
 
                 {/* Controls hint */}
-                <div className="absolute bottom-4 left-4 text-white text-sm opacity-70">
+                <div className="absolute bottom-4 left-4 text-white text-sm opacity-70 hidden md:block">
                     Use ↑↓ or W/S to move
+                </div>
+
+                {/* Mobile Controls */}
+                <div className="absolute bottom-8 left-4 flex flex-col gap-4 md:hidden z-40">
+                    <button
+                        className={`w-16 h-16 rounded-full bg-white/20 border-2 border-white/50 text-white flex items-center justify-center text-2xl active:bg-white/40 touch-none select-none ${touchUp ? 'bg-white/40' : ''}`}
+                        onTouchStart={(e) => { e.preventDefault(); setTouchUp(true); }}
+                        onTouchEnd={(e) => { e.preventDefault(); setTouchUp(false); }}
+                        onMouseDown={() => setTouchUp(true)}
+                        onMouseUp={() => setTouchUp(false)}
+                        onMouseLeave={() => setTouchUp(false)}
+                    >
+                        ▲
+                    </button>
+                    <button
+                        className={`w-16 h-16 rounded-full bg-white/20 border-2 border-white/50 text-white flex items-center justify-center text-2xl active:bg-white/40 touch-none select-none ${touchDown ? 'bg-white/40' : ''}`}
+                        onTouchStart={(e) => { e.preventDefault(); setTouchDown(true); }}
+                        onTouchEnd={(e) => { e.preventDefault(); setTouchDown(false); }}
+                        onMouseDown={() => setTouchDown(true)}
+                        onMouseUp={() => setTouchDown(false)}
+                        onMouseLeave={() => setTouchDown(false)}
+                    >
+                        ▼
+                    </button>
                 </div>
 
                 {/* Game Over Screen */}
